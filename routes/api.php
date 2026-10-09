@@ -7,6 +7,8 @@ use App\Http\Controllers\Api\CourseController;
 use App\Http\Controllers\Api\DisciplineController;
 use App\Http\Controllers\Api\DistrictController;
 use App\Http\Controllers\Api\EmployeeWithdrawalController;
+use App\Http\Controllers\Api\EscolaImportacao\AlunoController;
+use App\Http\Controllers\Api\EscolaImportacao\FrequenciaController;
 use App\Http\Controllers\Api\GradeController;
 use App\Http\Controllers\Api\InstitutionController;
 use App\Http\Controllers\Api\MessageController;
@@ -86,4 +88,9 @@ Route::group(['prefix' => 'resource', 'as' => 'api.resource.', 'namespace' => 'A
     Route::get('evaluation-rule', 'EvaluationRule\ResourceEvaluationRuleController@index')->name('evaluation-rule');
     Route::get('discipline', 'Discipline\ResourceDisciplineController@index')->name('discipline');
     Route::get('country', 'Country\ResourceCountryController@index')->name('country');
+});
+
+Route::group(['middleware' => 'auth:sanctum', 'prefix' => 'escola-importacao/escolas', 'as' => 'api.escola-importacao.'], static function () {
+    Route::get('alunos', [AlunoController::class, 'index'])->name('alunos');
+    Route::get('frequencias', [FrequenciaController::class, 'index'])->name('frequencias');
 });
