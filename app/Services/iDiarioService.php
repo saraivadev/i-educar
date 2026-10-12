@@ -136,6 +136,42 @@ class iDiarioService
         ]);
     }
 
+    /**
+     * Frequência consolidada por aluno e turma em uma data.
+     *
+     * @param array<int, int> $studentIds
+     * @return array<int, array<string, mixed>>
+     */
+    public function getDailyFrequencies(int $unitId, string $date, array $studentIds = []): array
+    {
+        $query = http_build_query(['unity_api_code' => $unitId, 'date' => $date]);
+
+        foreach ($studentIds as $studentId) {
+            $query .= '&student_api_codes[]=' . (int) $studentId;
+        }
+
+        try {
+            $response = $this->http->request('GET', $this->apiUrl . '/api/v2/escola_importacao/frequencias', [
+                'query' => $query,
+                'headers' => [
+                    'token' => $this->apiToken,
+                ],
+                'connect_timeout' => 5,
+                'timeout' => 30,
+            ]);
+
+            $body = json_decode((string) $response->getBody(), true);
+        } catch (Exception $e) {
+            throw new RuntimeException('Ocorreu um erro de integração com o i-Diário: ' . $e->getMessage());
+        }
+
+        if (!is_array($body) || !array_is_list($body)) {
+            throw new RuntimeException('Ocorreu um erro de integração com o i-Diário: resposta inválida.');
+        }
+
+        return $body;
+    }
+
     public static function hasIdiarioConfigurations()
     {
         return !empty(config('legacy.config.url_novo_educacao'))
