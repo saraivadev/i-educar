@@ -29,7 +29,7 @@ class AlunoQuery
                 }
             })
             ->with([
-                'registration.student.person',
+                'registration.student.person.phones',
                 'registration.student.deficiencies',
                 'registration.student.individual.mother.individual',
                 'registration.student.individual.mother.phones',
