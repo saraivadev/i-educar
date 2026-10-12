@@ -262,6 +262,35 @@ class AlunoTest extends TestCase
             ->assertJsonPath('0.responsaveis.0.parentesco', 'responsavel');
     }
 
+    public function test_uses_the_student_phone_when_the_guardian_has_none(): void
+    {
+        $this->authenticate();
+
+        $mother = $this->individual();
+        $father = $this->individual();
+
+        LegacyPhoneFactory::new()->create(['idpes' => $father->idpes, 'tipo' => 1, 'ddd' => 86, 'fone' => 988887777]);
+
+        $registration = $this->enroll([
+            'idpes_mae' => $mother->idpes,
+            'idpes_pai' => $father->idpes,
+        ]);
+
+        LegacyPhoneFactory::new()->create([
+            'idpes' => $registration->student->ref_idpes,
+            'tipo' => 2,
+            'ddd' => 86,
+            'fone' => 999112233,
+        ]);
+
+        $this->request(['inep' => self::INEP])
+            ->assertOk()
+            ->assertJsonPath('0.responsaveis.0.parentesco', 'mae')
+            ->assertJsonPath('0.responsaveis.0.telefone', '86999112233')
+            ->assertJsonPath('0.responsaveis.1.parentesco', 'pai')
+            ->assertJsonPath('0.responsaveis.1.telefone', '86988887777');
+    }
+
     /** CA-13, CA-14 */
     public function test_lists_deficiencies_as_comorbidities(): void
     {

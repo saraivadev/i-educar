@@ -34,7 +34,7 @@ class AlunoResource extends JsonResource
             'serie_descricao' => $registration->grade?->nm_serie,
             'nivelEnsino' => $registration->course?->educationLevel?->nm_nivel ?: $registration->course?->nm_curso,
             'comorbidades' => $student->deficiencies->pluck('nm_deficiencia')->values()->all(),
-            'responsaveis' => $this->guardians($individual),
+            'responsaveis' => $this->guardians($individual, $student->person ? self::phone($student->person) : null),
             'professores' => $this->teachers($this->schoolClass),
         ];
     }
@@ -57,11 +57,13 @@ class AlunoResource extends JsonResource
     }
 
     /**
-     * Mãe, pai e responsável, sem repetir a mesma pessoa.
+     * Mãe, pai e responsável, sem repetir a mesma pessoa. As escolas costumam
+     * registrar o contato da família na ficha do aluno, então esse telefone é
+     * usado quando o responsável não tem um próprio.
      *
      * @return array<int, array<string, mixed>>
      */
-    private function guardians(?LegacyIndividual $individual): array
+    private function guardians(?LegacyIndividual $individual, ?string $studentPhone): array
     {
         if ($individual === null) {
             return [];
@@ -83,7 +85,7 @@ class AlunoResource extends JsonResource
             $guardians[$person->idpes] = [
                 'nome' => $person->nome,
                 'parentesco' => $kinship,
-                'telefone' => self::phone($person),
+                'telefone' => self::phone($person) ?? $studentPhone,
                 'responsavel_cpf' => self::cpf($person->individual),
                 'data_nascimento' => $person->individual?->data_nasc?->format('Y-m-d'),
             ];
